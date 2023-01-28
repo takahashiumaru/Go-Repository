@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  api:
+    restart: always
+    container_name: mf-micro-service-ski-discount-proposal
+    image: registry.gitlab.com/vneu/mf-micro-service-discount-proposal:${TAG}
+    volumes:
+      - /home/DOCKER/mf-micro-service/file:/app/API-SKI/file
+      - /home/DOCKER/mf-micro-service/file:/app/file-web
+      - /home/DOCKER/mf-micro-service/file:/app/file
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: "1m"
+
+networks:
+  default:
+    external:
+      name: api-ski
