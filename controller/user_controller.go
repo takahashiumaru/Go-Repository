@@ -18,4 +18,5 @@ type UserController interface {
 	// Auth
 	Login(context *gin.Context)
 	RefreshToken(context *gin.Context)
+	Registration(context *gin.Context)
 }

@@ -54,18 +54,57 @@ func (service *UserServiceImpl) Create(request *web.UserCreateRequest) web.UserR
 	if err != nil {
 		helper.PanicIfError(err)
 	}
-	nipUser, err := strconv.Atoi(request.Nip)
-	helper.PanicIfError(err)
+	nipUser := strconv.Itoa(request.Nip)
 	// Create user
 	user := &domain.User{
-		Model:    gorm.Model{ID: uint(nipUser)},
+		// Model:    gorm.Model{ID: uint(nipUser)},
 		Role:     request.Role,
 		Name:     request.Name,
-		Nip:      request.Nip,
+		Nip:      nipUser,
 		JoinDate: request.JoinDate,
 		Password: string(hashedPassword),
 		Email:    request.Email,
 		Phone:    request.Phone,
+	}
+	user = service.UserRepository.Create(tx, user)
+
+	return user.ToUserResponse()
+}
+
+func (service *UserServiceImpl) Registration(request *web.RegistrationRequest) web.UserResponse {
+	// Validate Request
+	err := service.Validate.Struct(request)
+	helper.PanicIfError(err)
+
+	// Start Transaction
+	tx := service.DB.Begin()
+	err = tx.Error
+	helper.PanicIfError(err)
+	defer helper.CommitOrRollback(tx)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		helper.PanicIfError(err)
+	}
+	// hd := hashids.NewData()
+	// hd.Salt = request.Password
+	// h, _ := hashids.NewWithData(hd)
+	// id, _ := h.Encode([]int{request.Nip})
+	// pass, _ := h.EncodeHex(request.Password)
+	nipUser := strconv.Itoa(request.Nip)
+	// userID := id + hd.Salt + pass
+	// Create user
+	user := &domain.User{
+		CreatedByID: strconv.Itoa(request.Nip),
+		UpdatedByID: strconv.Itoa(request.Nip),
+		ID:          uint(request.Nip),
+		Role:        request.Role,
+		Name:        request.Name,
+		Nip:         nipUser,
+		JoinDate:    request.JoinDate,
+		Password:    string(hashedPassword),
+		Email:       request.Email,
+		Phone:       request.Phone,
+		Image:       "default.png",
 	}
 	user = service.UserRepository.Create(tx, user)
 
@@ -156,16 +195,18 @@ func (service *UserServiceImpl) Update(id *int, request *web.UserUpdateRequest) 
 	err = tx.Error
 	helper.PanicIfError(err)
 	defer helper.CommitOrRollback(tx)
-
+	// profileImage := fmt.Sprintf("%v-%v.png", request.Name, id)
 	// Update user
 	user := &domain.User{
 		Model:      gorm.Model{ID: uint(*id)},
 		Role:       request.Role,
+		Nip:        request.Nip,
 		Name:       request.Name,
 		JoinDate:   request.JoinDate,
 		ResignDate: request.ResignDate,
 		Email:      request.Email,
 		Phone:      request.Phone,
+		Image:      request.Image.Filename,
 	}
 	user = service.UserRepository.Update(tx, user)
 
@@ -252,7 +293,6 @@ func (service *UserServiceImpl) RefreshToken(request *web.RefreshTokenCreateRequ
 	helper.PanicIfError(exception.ErrRefreshTokenExpired)
 	return web.TokenResponse{}
 }
-
 func (service *UserServiceImpl) Login(nip, password, userAgent, remoteAddress *string) web.TokenResponse {
 	tx := service.DB.Begin()
 	err := tx.Error
@@ -262,9 +302,11 @@ func (service *UserServiceImpl) Login(nip, password, userAgent, remoteAddress *s
 
 	user := service.UserRepository.FindByNip(tx, nip)
 
-	//  hashedPassword := []byte(*password + "dhjshjsadjkhdshjkdsajhkdasjhsdajhdsajhkdsajhsdajk")
+	// hashedPassword := []byte(*password)
 	// err = bcrypt.CompareHashAndPassword([]byte(user.Password), hashedPassword)
-	// helper.PanicIfError(err)
+	// if err != nil {
+	// 	helper.PanicIfError(exception.ErrUnauthorized)
+	// }
 
 	ts, err := auth.CreateToken(&user, user.Nip, userAgent, remoteAddress, func(userID uint, tokenDetails *auth.TokenDetails) {
 		sessions := &domain.Session{

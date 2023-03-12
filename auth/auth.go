@@ -113,7 +113,6 @@ func CreateToken(user *domain.User, level string, userAgent, remoteAddress *stri
 	return td, nil
 }
 
-
 func ExtractTokenMetadata(stringToken string) (*AccessDetails, error) {
 	token, err := VerifyToken(stringToken)
 	if err != nil {
@@ -146,9 +145,7 @@ func VerifyToken(tokenString string) (*jwt.Token, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(configuration.Db), nil
-		// NOT DB
-		// return []byte(configuration.AccessSecret), nil
+		return []byte(configuration.AccessSecret), nil
 	})
 	return token, nil
 }

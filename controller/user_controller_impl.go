@@ -115,13 +115,29 @@ func (controller *UserControllerImpl) Delete(c *gin.Context, _ *auth.AccessDetai
 	c.JSON(http.StatusOK, webResponse)
 }
 
-func (controller *UserControllerImpl) Update(c *gin.Context, _ *auth.AccessDetails) {
-	request := &web.UserUpdateRequest{}
-	helper.ReadFromRequestBody(c, &request)
-
-	id := c.Param("id")
-	userID, err := strconv.Atoi(id)
+func (controller *UserControllerImpl) Update(c *gin.Context, auth *auth.AccessDetails) {
+	var err error
+	files, _ := c.FormFile("image")
+	// files, ok := form.Value("image")
+	// if !ok {
+	// 	err = &exception.ErrorSendToResponse{Err: "File Upload Error"}
+	// 	helper.PanicIfError(err)
+	// }
+	//Upload files to the specified directory
+	err = c.SaveUploadedFile(files, "file/profile/"+files.Filename)
 	helper.PanicIfError(err)
+
+	request := &web.UserUpdateRequest{
+		Name:  c.PostForm("name"),
+		Role:  c.PostForm("role"),
+		Email: c.PostForm("email"),
+		Phone: c.PostForm("phone"),
+		Image: files,
+	}
+	paramID := c.Param("id")
+	userID, err := strconv.Atoi(paramID)
+	helper.PanicIfError(err)
+
 
 	userResponse := controller.UserService.Update(&userID, request)
 	webResponse := web.WebResponse{
@@ -141,6 +157,20 @@ func (controller *UserControllerImpl) FindAll(c *gin.Context, _ *auth.AccessDeta
 		Success: true,
 		Message: helper.MessageDataFoundOrNot(userResponses),
 		Data:    userResponses,
+	}
+
+	c.JSON(http.StatusOK, webResponse)
+}
+
+func (controller *UserControllerImpl) Registration(c *gin.Context) {
+	request := &web.RegistrationRequest{}
+	helper.ReadFromRequestBody(c, &request)
+
+	userResponse := controller.UserService.Registration(request)
+	webResponse := web.WebResponse{
+		Success: true,
+		Message: "User created successfully",
+		Data:    userResponse,
 	}
 
 	c.JSON(http.StatusOK, webResponse)

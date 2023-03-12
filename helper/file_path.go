@@ -1,7 +1,7 @@
 package helper
 
 const (
-	PathCityCsv                = "file/city/"
+	PathProfile                = "file/profile/"
 	PathHierarchyCsv           = "file/hierarchy/"
 	PathDiscountProposalReturn = "file/discount_proposal_return/"
 	PathEvent                  = "file/event/"

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"cek/helper"
+	"cek/model/domain"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -36,11 +37,10 @@ func ConnectDatabase(user, host, password, port, db string) *gorm.DB {
 
 	err = database.AutoMigrate(
 
-	// Discount Proposal
-
-	// &domain.Test{},
-	// &domain.User{},
-	// &domain.Session{},
+		// GOLANG
+		&domain.Note{},
+		&domain.User{},
+		&domain.Session{},
 	)
 	if err != nil {
 		panic("failed to auto migrate schema")

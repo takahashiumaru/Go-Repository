@@ -28,4 +28,5 @@ func UserRoute(router *gin.Engine, db *gorm.DB, validate *validator.Validate) {
 
 	router.GET("/users/login", userController.Login)
 	router.POST("/users/refresh-token", userController.RefreshToken)
+	router.POST("/users/registration", userController.Registration)
 }

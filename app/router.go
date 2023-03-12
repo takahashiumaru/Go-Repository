@@ -40,8 +40,9 @@ func NewRouter(db *gorm.DB, validate *validator.Validate) *gin.Engine {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
-	route.TestRoute(router, db, validate)
+	route.NoteRoute(router, db, validate)
 	route.UserRoute(router, db, validate)
+	route.FileRoute(router, db, validate)
 
 	return router
 }
